@@ -49,8 +49,8 @@ if __name__ == "__main__":
         "ECalBarrelDigi", "ECalBarrelReco",
         "ECalEndcapDigi", "ECalEndcapReco",
         "HCalBarrelDigi", "HCalBarrelReco",
-        "HCalEndcapDigi", "HCalEndcapReco", "MySimpleMuonDigi",
-        "MyPfoAnalysis"])
+        "HCalEndcapDigi", "HCalEndcapReco", 
+        "MyDDSimpleMuonDigi", "MyPfoAnalysis"])
     ecalEnergyStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     ecalEnergyStep.setMarlinPandoraProcessor(pandoraProcessor)
     ecalEnergyStep.setRunEcalRingCalibration(runEcalRingCalibration)
@@ -66,8 +66,8 @@ if __name__ == "__main__":
         "ECalBarrelDigi", "ECalBarrelReco",
         "ECalEndcapDigi", "ECalEndcapReco",
         "HCalBarrelDigi", "HCalBarrelReco",
-        "HCalEndcapDigi", "HCalEndcapReco", "MySimpleMuonDigi",
-        "MyPfoAnalysis"])
+        "HCalEndcapDigi", "HCalEndcapReco", 
+        "MyDDSimpleMuonDigi", "MyPfoAnalysis"])
     hcalEnergyStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     hcalEnergyStep.setMarlinPandoraProcessor(pandoraProcessor)
     hcalEnergyStep.setRunHcalRingCalibration(runHcalRingCalibration)
@@ -82,8 +82,8 @@ if __name__ == "__main__":
         "ECalBarrelDigi", "ECalBarrelReco",
         "ECalEndcapDigi", "ECalEndcapReco",
         "HCalBarrelDigi", "HCalBarrelReco",
-        "HCalEndcapDigi", "HCalEndcapReco", "MySimpleMuonDigi",
-        "MyPfoAnalysis"])
+        "HCalEndcapDigi", "HCalEndcapReco", 
+        "MyDDSimpleMuonDigi", "MyPfoAnalysis"])
     pandoraMipScaleStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     pandoraMipScaleStep.setMarlinPandoraProcessor(pandoraProcessor)
     manager.addStep( pandoraMipScaleStep )
