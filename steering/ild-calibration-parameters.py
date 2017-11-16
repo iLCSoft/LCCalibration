@@ -10,34 +10,34 @@
 calibrationParameters = []
 
 # calo hit digitization
-calibrationParameters.append( ("MyEcalBarrelDigi", "calibration_mip") )
-calibrationParameters.append( ("MyEcalEndcapDigi", "calibration_mip") )
-calibrationParameters.append( ("MyEcalRingDigi",   "calibration_mip") )
-calibrationParameters.append( ("MyHcalBarrelDigi", "calibration_mip") )
-calibrationParameters.append( ("MyHcalEndcapDigi", "calibration_mip") )
-calibrationParameters.append( ("MyHcalRingDigi",   "calibration_mip") )
+calibrationParameters.append( ("MyEcalBarrelDigi", "calibration_mip", "EcalBarrelMip") )
+calibrationParameters.append( ("MyEcalEndcapDigi", "calibration_mip", "EcalEndcapMip") )
+calibrationParameters.append( ("MyEcalRingDigi",   "calibration_mip", "EcalRingMip") )
+calibrationParameters.append( ("MyHcalBarrelDigi", "calibration_mip", "HcalBarrelMip") )
+calibrationParameters.append( ("MyHcalEndcapDigi", "calibration_mip", "HcalEndcapMip") )
+calibrationParameters.append( ("MyHcalRingDigi",   "calibration_mip", "HcalRingMip") )
 
 # calo hit reconstruction
-calibrationParameters.append( ("MyEcalBarrelReco", "calibration_factorsMipGev") )
-calibrationParameters.append( ("MyEcalEndcapReco", "calibration_factorsMipGev") )
-calibrationParameters.append( ("MyEcalRingReco",   "calibration_factorsMipGev") )
-calibrationParameters.append( ("MyHcalBarrelReco", "calibration_factorsMipGev") )
-calibrationParameters.append( ("MyHcalEndcapReco", "calibration_factorsMipGev") )
-calibrationParameters.append( ("MyHcalRingReco",   "calibration_factorsMipGev") )
+calibrationParameters.append( ("MyEcalBarrelReco", "calibration_factorsMipGev", "EcalBarrelEnergyFactors") )
+calibrationParameters.append( ("MyEcalEndcapReco", "calibration_factorsMipGev", "EcalEndcapEnergyFactors") )
+calibrationParameters.append( ("MyEcalRingReco",   "calibration_factorsMipGev", "EcalRingEnergyFactors") )
+calibrationParameters.append( ("MyHcalBarrelReco", "calibration_factorsMipGev", "HcalBarrelEnergyFactors") )
+calibrationParameters.append( ("MyHcalEndcapReco", "calibration_factorsMipGev", "HcalEndcapEnergyFactors") )
+calibrationParameters.append( ("MyHcalRingReco",   "calibration_factorsMipGev", "HcalRingEnergyFactors") )
 
 # muon calibration
-calibrationParameters.append( ("MySimpleMuonDigi", "CalibrMUON") )
+calibrationParameters.append( ("MySimpleMuonDigi", "CalibrMUON", "MuonCalibration") )
 
 # PandoraPFA constants
-calibrationParameters.append( ("MyDDMarlinPandora", "ECalToMipCalibration") )
-calibrationParameters.append( ("MyDDMarlinPandora", "HCalToMipCalibration") )
-calibrationParameters.append( ("MyDDMarlinPandora", "MuonToMipCalibration") )
-calibrationParameters.append( ("MyDDMarlinPandora", "ECalToEMGeVCalibration") )
-calibrationParameters.append( ("MyDDMarlinPandora", "HCalToEMGeVCalibration") )
-calibrationParameters.append( ("MyDDMarlinPandora", "ECalToHadGeVCalibrationBarrel") )
-calibrationParameters.append( ("MyDDMarlinPandora", "ECalToHadGeVCalibrationEndCap") )
-calibrationParameters.append( ("MyDDMarlinPandora", "HCalToHadGeVCalibration") )
-calibrationParameters.append( ("MyDDMarlinPandora", "SoftwareCompensationWeights") )
+calibrationParameters.append( ("MyDDMarlinPandora", "ECalToMipCalibration", "PandoraEcalToMip") )
+calibrationParameters.append( ("MyDDMarlinPandora", "HCalToMipCalibration", "PandoraHcalToMip") )
+calibrationParameters.append( ("MyDDMarlinPandora", "MuonToMipCalibration", "PandoraMuonToMip") )
+calibrationParameters.append( ("MyDDMarlinPandora", "ECalToEMGeVCalibration", "PandoraEcalToEMScale") )
+calibrationParameters.append( ("MyDDMarlinPandora", "HCalToEMGeVCalibration", "PandoraHcalToEMScale") )
+calibrationParameters.append( ("MyDDMarlinPandora", "ECalToHadGeVCalibrationBarrel", "PandoraEcalToHadBarrelScale") )
+calibrationParameters.append( ("MyDDMarlinPandora", "ECalToHadGeVCalibrationEndCap", "PandoraEcalToHadEndcapScale") )
+calibrationParameters.append( ("MyDDMarlinPandora", "HCalToHadGeVCalibration", "PandoraHcalToHadScale") )
+calibrationParameters.append( ("MyDDMarlinPandora", "SoftwareCompensationWeights", "PandoraSoftwareCompensationWeights") )
 
 
 #
