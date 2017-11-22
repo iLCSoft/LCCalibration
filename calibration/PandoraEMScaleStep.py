@@ -20,6 +20,8 @@ class PandoraEMScaleStep(CalibrationStep) :
         self._maxNIterations = 5
         self._energyScaleAccuracy = 0.01
         self._photonEnergy = 0
+        self._recProcessorName = ""
+        self._dstProcessorName = ""
 
         # step input
         self._inputEcalToEMGeV = None
@@ -38,6 +40,10 @@ class PandoraEMScaleStep(CalibrationStep) :
 
     def description(self):
         return "Calibrate the electromagnetic scale of the ecal and the hcal. Outputs the constants ECalToEMGeVCalibration and HCalToEMGeVCalibration"
+
+    def setOutputProcessorNames(self, recProcessor, dstProcessor):
+        self._recProcessorName = recProcessor
+        self._dstProcessorName = dstProcessor
 
     def readCmdLine(self, parsed) :
         # setup marlin
@@ -67,6 +73,12 @@ class PandoraEMScaleStep(CalibrationStep) :
         
         if len(self._runProcessors):
             self._marlin.turnOffProcessorsExcept(self._runProcessors)
+        
+        if len(self._recProcessorName):
+            self._marlin.turnOffProcessors([self._recProcessorName])
+            
+        if len(self._dstProcessorName):
+            self._marlin.turnOffProcessors([self._dstProcessorName])
 
         self._inputEcalToEMGeV = float(self._marlin.getProcessorParameter(self._marlinPandoraProcessor, "ECalToEMGeVCalibration"))
         self._inputHcalToEMGeV = float(self._marlin.getProcessorParameter(self._marlinPandoraProcessor, "HCalToEMGeVCalibration"))
