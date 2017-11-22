@@ -88,7 +88,8 @@ class MarlinXML(object):
         if element:
             element = element[0]
         else:
-            raise KeyError("MarlinXML.setProcessorParameter: processor/parameter doesn't exists ({0}, {1})".format(processor, parameter))
+            print "WARNING: MarlinXML.setProcessorParameter: processor/parameter doesn't exists ({0}, {1}) !!!".format(processor, parameter)
+            return
 
         if element.get("value") is not None:
             del element.attrib["value"]
@@ -124,7 +125,8 @@ class MarlinXML(object):
         if element:
             element = element[0]
         else:
-            raise KeyError("MarlinXML.setGlobalParameter: global parameter doesn't exists ({0})".format(name))
+            print "WARNING: MarlinXML.setGlobalParameter: global parameter doesn't exists ({0}) !!!".format(name)
+            return
 
         if element.get("value") is not None:
             del element.attrib["value"]
