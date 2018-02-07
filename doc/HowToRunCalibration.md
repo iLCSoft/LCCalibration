@@ -291,15 +291,24 @@ The option `--maxNIterations` may be required if you process a step that needs t
 
 The options `--ecalCalibrationAccuracy` and `--hcalCalibrationAccuracy` are also used by iterative steps to set the precision on the mean reconstructed energy of the particle under interest. For instance, if you run the *EcalEnergyStep* as shown above, which is an iterative step, you can use 3 iterations and a precision of 0.01. This means the calibration constant for the ecal will be rescaled to achieve a precision of 1% on the photon reconstructed energy. The calibration will fail if this precision can not be reached after 3 iterations.
 
+**WARNING**: Not also that if your Marlin XML steering file contains includes, you must pre-process it using the -n option :
+
+```shell
+Marlin -n --global.OutputSteeringFile=MarlinStdRecoCalibration.xml MarlinStdReco.xml
+```
+
+This will produce a Marlin XML file with all includes processed and can be properly used by LCCalibration.
+
 Here after, an example command to run the first step only (*MipScale*) with the ILD model ILD_l5_o1_v02 with the standard reconstruction files from the ILDConfig package :
 
 ```shell
+$ Marlin -n --global.OutputSteeringFile=MarlinStdRecoCalibration.xml MarlinStdReco.xml
 $ python scripts/run-ild-calibration.py \
   --inputCalibrationFile calibration-ild.xml \
   --startStep 0 \
   --endStep 0 \
   --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
-  --steeringFile MarlinStdReco.xml \
+  --steeringFile MarlinStdRecoCalibration.xml \
   --lcioMuonFile ddsim-muon-calibration.slcio
 ```
 
@@ -332,10 +341,11 @@ This is an example of what could have been updated :
 To run the full calibration (all steps), you can run :
 
 ```shell
+$ Marlin -n --global.OutputSteeringFile=MarlinStdRecoCalibration.xml MarlinStdReco.xml
 $ python scripts/run-ild-calibration.py \
   --inputCalibrationFile calibration-ild.xml \
   --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
-  --steeringFile MarlinStdReco.xml \
+  --steeringFile MarlinStdRecoCalibration.xml \
   --lcioMuonFile ddsim-muon-calibration.slcio \
   --lcioPhotonFile ddsim-photon-calibration.slcio \
   --lcioKaon0LFile ddsim-kaon0L-calibration.slcio \
