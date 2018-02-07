@@ -1,7 +1,7 @@
 # LCCalibration documentation
 - Author : Remi Ete, DESY
 - Contact : remi.ete@desy.de
-- Last revision : 10/2017
+- Last revision : 07/02/2018
 
 ## Introduction
 
@@ -41,12 +41,12 @@ If you are running in a particular experiment that manages a simulation producti
 
 Nevertheless, these samples can be produced by the user if your study requires it. For this, you need a ddsim steering file. A template file can be found in the *steering* directory (*ddsim-steering-template.py*). Note that this file has been copied from the ILDConfig package and adapted to run a single particle gun with 10 GeV photons. However, most of the parameters can be adjusted in the *ddsim* command line arguments.
 
-To generate the three particle samples with this steering file, you can run the three following command.
+To generate the three particle samples with this steering file, you can run the three following command for the ILD geometry ILD_l5_o1_v02
 
 For **muon** samples :
 
 ```shell
-ddsim --compactFile your_compact_file.xml \
+ddsim --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
   --steeringFile steering/ddsim-steering-template.py \
   --outputFile ddsim-muon-calibration.slcio \
   --numberOfEvents 20000 \
@@ -64,7 +64,7 @@ ddsim --compactFile your_compact_file.xml \
 For **photon** samples :
 
 ```shell
-ddsim --compactFile your_compact_file.xml \
+ddsim --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
   --steeringFile template_steering_file.py \
   --outputFile ddsim-photon-calibration.slcio \
   --numberOfEvents 20000 \
@@ -82,7 +82,7 @@ ddsim --compactFile your_compact_file.xml \
 For **kaon0L** samples :
 
 ```shell
-ddsim --compactFile your_compact_file.xml \
+ddsim --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
   --steeringFile template_steering_file.py \
   --outputFile ddsim-kaon0L-calibration.slcio \
   --numberOfEvents 20000 \
@@ -102,7 +102,7 @@ A special case may occur if your PandoraPFA reconstruction makes use of the soft
 ```shell
 for energy in 10 20 30 40 50 60 70 80 90
 do
-  ddsim --compactFile your_compact_file.xml \
+  ddsim --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
     --steeringFile template_steering_file.py \
     --outputFile ddsim-kaon0L-${energy}GeV-SCCalibration.slcio \
     --numberOfEvents 20000 \
@@ -141,7 +141,16 @@ python scripts/extract-marlin-parameters.py \
   --outputFile calibration-ild.xml
 ```
 
-This will produced a XML file called "*calibration-ild.xml*", with the following content :
+If your calibration constants are written in a separate Marlin XML file as constants, you can use the *extract-marlin-constants.py* script as :
+
+```shell
+python scripts/extract-marlin-parameters.py \
+  --parameterFile steering/ild-calibration-parameters.py \
+  --constantFile marlin_calibration_constants.xml \
+  --outputFile calibration-ild.xml
+```
+
+Both scripts will produced a XML file called "*calibration-ild.xml*", with the following (example) content :
 
 ```xml
 <?xml version='1.0' encoding='ASCII'?>
@@ -161,9 +170,7 @@ Before going ahead, make sure you have initialized the ILCSoft and LCCalibration
 
 ```shell
 source /path/to/ilcsoft/init_ilcsoft.sh
-# you have to be in the root directory to source the init.sh file
-cd /path/to/LCCalibration
-source init.sh
+source /path/to/LCCalibration/init.sh
 ``` 
 
 and you have all steering files in the correct location. 
@@ -172,7 +179,7 @@ For ILD calibration you may want to use the ILDConfig package :
 
 ```shell
 git clone https://github.com/ILCSoft/ILDConfig.git
-cd ILDConfig/StandardConfig/lcgeo_current/
+cd ILDConfig/StandardConfig/production/
 ``` 
 
 
@@ -260,42 +267,43 @@ optional arguments:
                         The input muon energy (unit GeV)
 ```
 
-The first interesting option you may want to use is the --showSteps option. It shows which calibration steps are registered and prints their descriptions, i.e :
+The first interesting option you may want to use is the `--showSteps` option. It shows which calibration steps are registered and prints their descriptions, i.e :
 
 ```shell
 $ python scripts/run-ild-calibration.py --showSteps
 ================================
-===== Registered steps (6) =====
+===== Registered steps (7) =====
  => 0) MipScale : Calculate the mip values from SimCalorimeter collections in the muon lcio file. Outputs ecal mip, hcal barrel mip, hcal endcap mip and hcal ring mip values
  => 1) EcalEnergy : Calculate the constants related to the energy deposit in a ecal cell (unit GeV). Outputs the ecalFactors values
  => 2) HcalEnergy : Calculate the constants related to the energy deposit in a hcal cell (unit GeV). Outputs the hcalBarrelFactor, hcalEndcapFactor and hcalRingFactor values
  => 3) PandoraMipScale : Calculate the EcalToGeVMip, HcalToGeVMip and MuonToGeVMip that correspond to the mean reconstructed energy of mip calorimeter hit in the respective detectors
  => 4) PandoraEMScale : Calibrate the electromagnetic scale of the ecal and the hcal. Outputs the constants ECalToEMGeVCalibration and HCalToEMGeVCalibration
  => 5) PandoraHadScale : Calibrate the hadronic scale of the ecal and the hcal. Outputs the constants ECalToHadGeVCalibrationBarrel, ECalToHadGeVCalibrationEndCap and HCalToHadGeVCalibration
+ => 6) PandoraSoftComp : Calibrate the PandoraPFA software compensation energy correction weights
 ================================
 ```
 
-The help message also shows the options --startStep and --endStep. They can be used to specify which calibration steps you want to run. One may want to run only the *MipScale* step first and check the result before going ahead with the next step(s).
+The help message also shows the options `--startStep` and `--endStep`. They can be used to specify which calibration steps you want to run. One may want to run only the *MipScale* step first and check the result before going ahead with the next step(s).
 
-The options --inputCalibrationFile and --outputCalibrationFile specifies respectively the calibration XML file containing the input and output calibration constants. If no output file is specified, the input file will be updated instead.
+The options `--inputCalibrationFile` and `--outputCalibrationFile` specifies respectively the calibration XML file containing the input and output calibration constants. If no output file is specified, the input file will be updated instead.
 
-The option --maxNIterations may be required if you process a step that needs to iterate multiple times over the Marlin reconstruction to get a single calibration constant. The default value is normally set to 5 iterations. 
+The option `--maxNIterations` may be required if you process a step that needs to iterate multiple times over the Marlin reconstruction to get a single calibration constant. The default value is normally set to 5 iterations. 
 
-The options --ecalCalibrationAccuracy and --hcalCalibrationAccuracy are also used by iterative steps to set the precision on the mean reconstructed energy of the particle under interest. For instance, if you run the *EcalEnergyStep* as shown above, which is an iterative step, you can use 3 iterations and a precision of 0.01. This means the calibration constant for the ecal will be rescaled to achieve a precision of 1% on the photon reconstructed energy. The calibration will fail if this precision can not be reached after 3 iterations.
+The options `--ecalCalibrationAccuracy` and `--hcalCalibrationAccuracy` are also used by iterative steps to set the precision on the mean reconstructed energy of the particle under interest. For instance, if you run the *EcalEnergyStep* as shown above, which is an iterative step, you can use 3 iterations and a precision of 0.01. This means the calibration constant for the ecal will be rescaled to achieve a precision of 1% on the photon reconstructed energy. The calibration will fail if this precision can not be reached after 3 iterations.
 
-Here after, an example command to run the first step only (*MipScale*) with the ILD model ILD_l4_v02 with the standard reconstruction files from the ILDConfig package :
+Here after, an example command to run the first step only (*MipScale*) with the ILD model ILD_l5_o1_v02 with the standard reconstruction files from the ILDConfig package :
 
 ```shell
 $ python scripts/run-ild-calibration.py \
   --inputCalibrationFile calibration-ild.xml \
   --startStep 0 \
   --endStep 0 \
-  --compactFile $lcgeo_DIR/ILD/compact/ILD_l4_v02/ILD_l4_v02.xml \
-  --steeringFile bbudsc_3evt_stdreco_dd4hep.xml \
+  --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
+  --steeringFile MarlinStdReco.xml \
   --lcioMuonFile ddsim-muon-calibration.slcio
 ```
 
-with *calibration-ild.xml* the calibration XML file produced by the *extract-marlin-parameters.py* script and *ddsim-muon-calibration.slcio* the lcio file produced by the *ddsim* simulation as performed above. After running this command, you will notice that your calibration XML file has been updated (we didn't specified any --outputCalibrationFile argument !).
+with *calibration-ild.xml* the calibration XML file produced by the *extract-marlin-parameters.py* script and *ddsim-muon-calibration.slcio* the lcio file produced by the *ddsim* simulation as performed above. After running this command, you will notice that your calibration XML file has been updated (we didn't specified any `--outputCalibrationFile` argument !).
 
 This is an example of what could have been updated :
 
@@ -326,8 +334,8 @@ To run the full calibration (all steps), you can run :
 ```shell
 $ python scripts/run-ild-calibration.py \
   --inputCalibrationFile calibration-ild.xml \
-  --compactFile $lcgeo_DIR/ILD/compact/ILD_l4_v02/ILD_l4_v02.xml \
-  --steeringFile bbudsc_3evt_stdreco_dd4hep.xml \
+  --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
+  --steeringFile MarlinStdReco.xml \
   --lcioMuonFile ddsim-muon-calibration.slcio \
   --lcioPhotonFile ddsim-photon-calibration.slcio \
   --lcioKaon0LFile ddsim-kaon0L-calibration.slcio \
@@ -347,13 +355,35 @@ $ python scripts/replace-marlin-parameters.py \
   --inputFile calibration-ild.xml
 ```
 
-This will gather all outputs from all the steps in your calibration XML and replace them in your Marlin steering file. You can also use the optional argument --newSteeringFile to write the result in a new Marlin steering file :
+This will gather all outputs from all the steps in your calibration XML and replace them in your Marlin steering file. You can also use the optional argument `--newSteeringFile` to write the result in a new Marlin steering file :
 
 ```shell
 $ python scripts/replace-marlin-parameters.py \
   --steeringFile original_marlin.xml \
   --inputFile calibration-ild.xml \
   --newSteeringFile new_marlin.xml
+```
+
+Note that by using this script you must ensure that your calibration constants are present in the top level Marlin XML file. If you have a separate file with constants, you can use the *generate-marlin-constants.py* script (*scripts* directory), i.e :
+
+```shell
+$ python scripts/generate-marlin-constants.py \
+  --constantsFile marlin_calibration_constants.xml \
+  --inputFile calibration-ild.xml \
+  --parameterFile steering/ild-calibration-parameters.py
+```
+
+This will create a XML file with a content looking like :
+
+```xml
+<?xml version='1.0' encoding='ASCII'?>
+<constant name="EcalBarrelMip">0.0001525</constant>
+<constant name="EcalEndcapMip">0.0001525</constant>
+<constant name="EcalRingMip">0.0001525</constant>
+<constant name="HcalBarrelMip">0.0004925</constant>
+<constant name="HcalEndcapMip">0.0004775</constant>
+<constant name="HcalRingMip">0.0004875</constant>
+<!-- More constants after -->
 ```
 
 Your now ready to run your reconstruction with a (re-)calibrated steering file.
@@ -379,54 +409,24 @@ ddsim-kaon0L-80GeV-SCCalibration.slcio
 ddsim-kaon0L-90GeV-SCCalibration.slcio
 ```
 
-The software compensation calibration is implemented as a calibration and thus can be run using the same calibration script. For the ILD detector, use the *run-ild-calibration.py* script.
-
-Use the help printout :
-
-```shell
-$ python scripts/calibrate-software-compensation.py --help
-  ...
-  --energies ENERGIES [ENERGIES ...]
-                        The input mc energies for software compensation calibration
-  --lcioFilePattern LCIOFILEPATTERN
-                        The LCIO input file pattern for soft comp. Must contains '%{energy}' string to match energy to file. Example : 'File_%{energy}GeV*.slcio'
-  --rootFilePattern ROOTFILEPATTERN
-                        The root input/output file pattern for soft comp. Must contains '%{energy}' string to match energy to file. Example : 'SoftComp_%{energy}GeV*.root'
-  --runMarlin           Whether to run marlin reconstruction before calibration of software compensation weights
-  --runMinimizer        Whether to run software compensation weights minimization
-  --maxParallel MAXPARALLEL
-                        The maximum number of marlin instance to run in parallel (process) for soft comp
-  ...
-```
+The software compensation calibration is implemented as a calibration step and thus can be run using the same calibration script. For the ILD detector, use the *run-ild-calibration.py* script again.
 
 This calibration can be run in two sub-step if needed :
 
 - Run Marlin reconstruction on the the simulation samples. This produces Pandora root files used as input for the next step.
 - Run a minimizer on the training root files and output new SC weights
 
-By omitting the argument --runMarlin, you will skip the Marlin reconstruction part and directly process the minimization. In the same way you can skip the minimizer and just run the reconstruction part to produce the root files first by omitting the argument --runMinimizer.
+By omitting the argument `--runMarlin`, you will skip the Marlin reconstruction part and directly process the minimization. In the same way you can skip the minimizer and just run the reconstruction part to produce the root files first by omitting the argument `--runMinimizer`.
 
-Processing the high energy samples could take a lot of time. If your machine allows it, you can run the different Marlin reconstruction in parallel over the input files. To do this, use the --maxParallel argument to specify how many instances of Marlin you want to run concurrently.
+Processing the high energy samples could take a lot of time. If your machine allows it, you can run the different Marlin reconstruction in parallel over the input files. To do this, use the `--maxParallel` argument to specify how many instances of Marlin you want to run concurrently.
 
-The argument --energies allows you to set the energies you want to use either for processing the Marlin reconstruction or to run the minimizer, i.e : 
+The argument `--energies` allows you to set the energies you want to use either for processing the Marlin reconstruction or to run the minimizer, for example `--energies 10 20 30 40 50 60 70 80 90`.
 
-```shell
---energies 10 20 30 40 50 60 70 80 90
-```
+The argument `--lcioFilePattern` set a file pattern used to read the lcio input files. In our case, with the pattern we have in the "*sc_data*" directory, we will specify `--lcioFilePattern ./sc_data/ddsim-kaon0L-%{energy}GeV-SCCalibration.slcio`
 
-The argument --lcioFilePattern set a file pattern used to read the lcio input files. In our case, with the pattern we have in the "*sc_data*" directory, we will specify : 
+The string portion "%{energy}" will be replaced by the energies specified by the `--energies` argument.
 
-```shell
---lcioFilePattern ./sc_data/ddsim-kaon0L-%{energy}GeV-SCCalibration.slcio
-```
-
-The string portion "%{energy}" will be replaced by the energies specified by the --energies argument.
-
-The argument --rootFilePattern works in the same way. For the Marlin reconstruction it will set the name of the root output file and for the minimizer step, the root input files to use. In our case, let's use the following pattern : 
-
-```shell
---rootFilePattern ./sc_data/Training-kaon0L-%{energy}GeV-SCCalibration.root
-```
+The argument `--rootFilePattern` works in the same way. For the Marlin reconstruction it will set the name of the root output file and for the minimizer step, the root input files to use. In our case, let's use the following pattern `--rootFilePattern ./sc_data/Training-kaon0L-%{energy}GeV-SCCalibration.root`
 
 The next commands show :
 
@@ -434,14 +434,14 @@ The next commands show :
 - how to run the minimizer only with the training root files
 - how to run Marlin reconstruction and the minimizer in one round, with 5 instances in parallel
 
-for the ILD model ILD_l4_v02. 
+for the ILD model ILD_l5_o1_v02. 
 
 **Marlin reconstruction only** :
 
 ```shell
 python scripts/run-ild-calibration.py \
   --runMarlin \
-  --compactFile $lcgeo_DIR/ILD/compact/ILD_l4_v02/ILD_l4_v02.xml \
+  --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
   --steeringFile bbudsc_3evt_stdreco_dd4hep.xml \
   --lcioFilePattern ./sc_data/ddsim-kaon0L-%{energy}GeV-SCCalibration.slcio \
   --rootFilePattern ./sc_data/Training-kaon0L-%{energy}GeV-SCCalibration.root \
@@ -468,7 +468,7 @@ python scripts/run-ild-calibration.py \
 python scripts/run-ild-calibration.py \
   --runMarlin \
   --runMinimizer \
-  --compactFile $lcgeo_DIR/ILD/compact/ILD_l4_v02/ILD_l4_v02.xml \
+  --compactFile $lcgeo_DIR/ILD/compact/ILD_l5_o1_v02/ILD_l5_o1_v02.xml \
   --steeringFile bbudsc_3evt_stdreco_dd4hep.xml \
   --lcioFilePattern ./sc_data/ddsim-kaon0L-%{energy}GeV-SCCalibration.slcio \
   --rootFilePattern ./sc_data/Training-kaon0L-%{energy}GeV-SCCalibration.root \
@@ -478,6 +478,6 @@ python scripts/run-ild-calibration.py \
   --endStep 6
 ```
 
-As you did for the previous calibration you can merge your calibration constants using the *replace-marlin-parameters.py*.
+As you did for the previous calibration you can merge your calibration constants using the *replace-marlin-parameters.py* or *generate-marlin-constants.py* scripts.
 
 Your now ready to run a fully calibrated reconstruction ! 
