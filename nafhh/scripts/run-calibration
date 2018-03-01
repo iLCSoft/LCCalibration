@@ -1,0 +1,199 @@
+#!/bin/bash
+
+echo "############################################################################"
+echo "                             System information"
+echo "                             =================="
+
+echo "Host:"
+hostname -f
+
+echo "CPU(s):"
+cat /proc/cpuinfo | grep "model name" | cut -b 14-
+
+echo "RAM:"
+cat /proc/meminfo | grep "MemTotal" | cut -b 10-
+
+echo "Swap:"
+cat /proc/meminfo | grep "SwapTotal" | cut -b 11-
+
+
+echo "############################################################################"
+echo "Group:      ${GROUP}"
+
+echo "Hosttype:   ${HOSTTYPE}"
+
+echo "User:       ${LOGNAME}"
+
+echo "Shell:      ${SHELL}"
+
+echo "TMP:        ${TMP}"
+
+echo "TMPDIR:     ${TMPDIR}"
+
+echo "User:       ${USER}"
+
+echo "Working_DIR:${PWD}"
+
+echo "############################################################################"
+echo
+echo "############################################################################"
+echo
+
+settings=$1
+
+# import user settings
+source ${settings}
+printSettings
+
+# source ilcsoft
+unset MARLIN_DLL # just in case ...
+source ${ilcsoftInitScript}
+echo $MARLIN_DLL
+export MARLIN_DLL=/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/MarlinDD4hep/v00-05/lib/libMarlinDD4hep.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/DDMarlinPandora/v00-09-01/lib/libDDMarlinPandora.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/MarlinReco/v01-22/lib/libMarlinReco.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/PandoraAnalysis/v02-00-00/lib/libPandoraAnalysis.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/LCFIVertex/v00-07-04/lib/libLCFIVertexProcessors.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/CEDViewer/v01-15/lib/libCEDViewer.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/Overlay/v00-20/lib/libOverlay.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/LCTuple/v01-10/lib/libLCTuple.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/MarlinKinfit/v00-05/lib/libMarlinKinfit.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/MarlinTrkProcessors/v02-09-01/lib/libMarlinTrkProcessors.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/MarlinKinfitProcessors/v00-03/lib/libMarlinKinfitProcessors.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/ILDPerformance/v01-04/lib/libILDPerformance.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/Clupatra/v01-02/lib/libClupatra.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/Physsim/v00-04/lib/libPhyssim.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/LCFIPlus/v00-06-07/lib/libLCFIPlus.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/FCalClusterer/v00-06/lib/libFCalClusterer.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/ForwardTracking/v01-13/lib/libForwardTracking.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/ConformalTracking/v01-04/lib/libConformalTracking.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/LICH/v00-01/lib/libLICH.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/MarlinTPC/v01-03/lib/libMarlinTPC.so:/afs/desy.de/project/ilcsoft/sw/x86_64_gcc54_ub1604/v01-19-05/Garlic/v3.0.4/lib/libGarlic.so:
+
+inputDirectory=${lcCalibrationPool}/ddsim
+outputDirectory=${lcCalibrationPool}/calibration
+checkPlotsOutputDirectory=${outputDirectory}/checkPlots-s${ilcsoftVersion}-G${detectorModelRec}
+calibrationFile=calibration-s${ilcsoftVersion}-G${detectorModelRec}-ILDCalibration.xml
+muonFiles=`ls -1 ${inputDirectory}/ddsim-s${ilcsoftVersion}-G${detectorModelSim}-Pmu--E${muonCalibrationEnergy}-calibration_*.slcio | tr '\n' ' '`
+photonFiles=`ls -1 ${inputDirectory}/ddsim-s${ilcsoftVersion}-G${detectorModelSim}-Pgamma-E${photonCalibrationEnergy}-calibration_*.slcio | tr '\n' ' '`
+kaon0LFiles=`ls -1 ${inputDirectory}/ddsim-s${ilcsoftVersion}-G${detectorModelSim}-Pkaon0L-E${kaon0LCalibrationEnergy}-calibration_*.slcio | tr '\n' ' '`
+
+cloneILDConfigGitRepo ${ildConfigGitRepo} ${ildConfigVersion}
+cloneOK=$?
+ls
+
+if [ ${cloneOK} != 0 ]
+then
+  echo "Couldn't clone ILDConfig !"
+  exit 1
+fi
+
+echo "ILDConfig: ${ILDConfig}"
+
+
+cloneLCCalibrationGitRepo ${lcCalibrationGitRepo} ${lcCalibrationVersion}
+cloneOK=$?
+ls
+
+if [ ${cloneOK} != 0 ]
+then
+  echo "Couldn't clone LCCalibration !"
+  exit 1
+fi
+
+echo "LCCalibration: ${LCCalibration}"
+source ${LCCalibration}/init.sh
+
+mkdir -p ${outputDirectory}
+
+# consider ILDConfig directory as running directory
+cd ${ILDConfig}/StandardConfig/production
+
+# Generate a fresh steering file !
+Marlin -n \
+  MarlinStdReco.xml \
+  --constant.lcgeo_DIR=$lcgeo_DIR \
+  --constant.DetectorModel=${detectorModelRec} \
+  --global.OutputSteeringFile=MarlinStdRecoCalibration.xml
+
+if [ $? -ne 0 ]; then
+    echo "Failed to generate a Marlin steering file !"
+    exit 1
+fi
+
+# Generate a calibration file
+python ${LCCALIBRATION_DIR}/scripts/extract-marlin-constants.py \
+  --parameterFile ${LCCALIBRATION_DIR}/steering/ild-calibration-parameters.py \
+  --constantFile Calibration/Calibration_${detectorModelRec}.xml \
+  --outputFile ${calibrationFile}
+
+if [ $? -ne 0 ]; then
+    echo "Failed to generate a calibration file !"
+    exit 1
+fi
+
+echo "############################################################################"
+echo "                             Running calibration"
+echo "                             ==================="
+
+# Run calibration
+python ${LCCALIBRATION_DIR}/scripts/run-ild-calibration.py \
+  --inputCalibrationFile ${calibrationFile} \
+  --compactFile $lcgeo_DIR/${lcgeoCompactFileRec} \
+  --steeringFile MarlinStdRecoCalibration.xml \
+  --pandoraSettings ${pandoraSettingsFile} \
+  --ecalCalibrationAccuracy ${ecalCalibrationAccuracy} \
+  --hcalCalibrationAccuracy ${hcalCalibrationAccuracy} \
+  --muonEnergy ${muonCalibrationEnergy} \
+  --photonEnergy ${photonCalibrationEnergy} \
+  --kaon0LEnergy ${kaon0LCalibrationEnergy} \
+  --lcioPhotonFile ${photonFiles} \
+  --lcioMuonFile ${muonFiles} \
+  --lcioKaon0LFile ${kaon0LFiles} \
+  --endStep 5 # Stop before software compensation training
+
+calibrationStatus=$?
+
+echo "############################################################################"
+echo "                   Job finished with status ${calibrationStatus}"
+echo "                             =================="
+  
+if [ $calibrationStatus -ne 0 ]; then
+    echo "Failed to run calibration !"
+    exit 1
+fi
+
+# Save output files
+mkdir -p ${outputDirectory}
+mkdir -p ${checkPlotsOutputDirectory}
+
+# Calibration file
+cp ${calibrationFile} ${outputDirectory}
+
+# All root files first
+cp PfoAnalysis_MipScale.root ${checkPlotsOutputDirectory}
+cp PfoAnalysis_EcalEnergy_iter*.root ${checkPlotsOutputDirectory}
+cp PfoAnalysis_HcalEnergy_iter*.root ${checkPlotsOutputDirectory}
+cp PfoAnalysis_PandoraMipScale.root ${checkPlotsOutputDirectory}
+cp PfoAnalysis_PandoraEMScale_iter*.root ${checkPlotsOutputDirectory}
+cp PfoAnalysis_PandoraHadScale_iter*.root ${checkPlotsOutputDirectory}
+
+# Check plots from mip scale step
+cp SimCaloHitEnergyDistribution_Direction_Corrected_SimCalorimeterHit_Energy_Distribution_ECal_${muonCalibrationEnergy}_GeV_Muons.C ${checkPlotsOutputDirectory}
+cp SimCaloHitEnergyDistribution_Direction_Corrected_SimCalorimeterHit_Energy_Distribution_ECal_${muonCalibrationEnergy}_GeV_Muons.png ${checkPlotsOutputDirectory}
+cp SimCaloHitEnergyDistribution_Direction_Corrected_SimCalorimeterHit_Energy_Distribution_HCal_${muonCalibrationEnergy}_GeV_Muons.C ${checkPlotsOutputDirectory}
+cp SimCaloHitEnergyDistribution_Direction_Corrected_SimCalorimeterHit_Energy_Distribution_HCal_${muonCalibrationEnergy}_GeV_Muons.png ${checkPlotsOutputDirectory}
+
+# Check plots from ecal energy step
+cp EcalEnergyCalibration_Calorimeter_Hit_Energies_ECal_Barrel_Digitisation.C ${checkPlotsOutputDirectory}
+cp EcalEnergyCalibration_Calorimeter_Hit_Energies_ECal_Barrel_Digitisation.png ${checkPlotsOutputDirectory}
+cp EcalEnergyCalibration_Calorimeter_Hit_Energies_ECal_EndCap_Digitisation.C ${checkPlotsOutputDirectory}
+cp EcalEnergyCalibration_Calorimeter_Hit_Energies_ECal_EndCap_Digitisation.png ${checkPlotsOutputDirectory}
+
+# Check plots from hcal energy step
+cp HcalEnergyCalibration_Calorimeter_Hit_Energies_HCal_Barrel_Digitisation.C ${checkPlotsOutputDirectory}
+cp HcalEnergyCalibration_Calorimeter_Hit_Energies_HCal_Barrel_Digitisation.png ${checkPlotsOutputDirectory}
+cp HcalEnergyCalibration_Calorimeter_Hit_Energies_HCal_EndCap_Digitisation.C ${checkPlotsOutputDirectory}
+cp HcalEnergyCalibration_Calorimeter_Hit_Energies_HCal_EndCap_Digitisation.png ${checkPlotsOutputDirectory}
+cp HcalRingEnergyCalibration_Direction_Correction_Distribution_HCal_${kaon0LCalibrationEnergy}_GeV_KaonL.C ${checkPlotsOutputDirectory}
+cp HcalRingEnergyCalibration_Direction_Correction_Distribution_HCal_${kaon0LCalibrationEnergy}_GeV_KaonL.png ${checkPlotsOutputDirectory}
+
+# Check plots from PandoraPFA mip scale step
+cp PandoraMipScale_GeVToMIP_Calibration_${muonCalibrationEnergy}_GeV_Muons_ECal.C ${checkPlotsOutputDirectory}
+cp PandoraMipScale_GeVToMIP_Calibration_${muonCalibrationEnergy}_GeV_Muons_ECal.png ${checkPlotsOutputDirectory}
+cp PandoraMipScale_GeVToMIP_Calibration_${muonCalibrationEnergy}_GeV_Muons_HCal.C ${checkPlotsOutputDirectory}
+cp PandoraMipScale_GeVToMIP_Calibration_${muonCalibrationEnergy}_GeV_Muons_HCal.png ${checkPlotsOutputDirectory}
+cp PandoraMipScale_GeVToMIP_Calibration_${muonCalibrationEnergy}_GeV_Muons_Muon_Chamber.C ${checkPlotsOutputDirectory}
+cp PandoraMipScale_GeVToMIP_Calibration_${muonCalibrationEnergy}_GeV_Muons_Muon_Chamber.png ${checkPlotsOutputDirectory}
+
+# Check plots from PandoraPFA EM scale step
+cp PandoraEMScale_PandoraPFA_Calibration_Electromagnetic_Energy_Scale_${photonCalibrationEnergy}_GeV_Photons.C ${checkPlotsOutputDirectory}
+cp PandoraEMScale_PandoraPFA_Calibration_Electromagnetic_Energy_Scale_${photonCalibrationEnergy}_GeV_Photons.png ${checkPlotsOutputDirectory}
+
+# Check plots from PandoraPFA Hadronic scale step
+cp PandoraHadScale_PandoraPFA_Calibration_Hadronic_Energy_Scale_Chi_Sqaured_Method_${kaon0LCalibrationEnergy}_GeV_KaonL.C ${checkPlotsOutputDirectory}
+cp PandoraHadScale_PandoraPFA_Calibration_Hadronic_Energy_Scale_Chi_Sqaured_Method_${kaon0LCalibrationEnergy}_GeV_KaonL.png ${checkPlotsOutputDirectory}
+
+ls -lthr ${outputDirectory}
+ls -lthr ${checkPlotsOutputDirectory}
