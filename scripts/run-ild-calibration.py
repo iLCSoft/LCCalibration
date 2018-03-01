@@ -80,7 +80,7 @@ if __name__ == "__main__":
         "MyHcalBarrelDigi", "MyHcalBarrelReco",
         "MyHcalEndcapDigi", "MyHcalEndcapReco",
         "MyHcalRingDigi", "MyHcalRingReco",
-        "MySimpleBCalDigi", "MySimpleLCalDigi", "MySimpleLHCalDigi", "MySimpleMuonDigi",
+        "MySimpleBCalDigi", "MySimpleLCalDigi", "MySimpleLHCalDigi", "MyDDSimpleMuonDigi",
         "MyPfoAnalysis"])
     ecalEnergyStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     ecalEnergyStep.setMarlinPandoraProcessor(pandoraProcessor)
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         "MyHcalBarrelDigi", "MyHcalBarrelReco",
         "MyHcalEndcapDigi", "MyHcalEndcapReco",
         "MyHcalRingDigi", "MyHcalRingReco",
-        "MySimpleBCalDigi", "MySimpleLCalDigi", "MySimpleLHCalDigi", "MySimpleMuonDigi",
+        "MySimpleBCalDigi", "MySimpleLCalDigi", "MySimpleLHCalDigi", "MyDDSimpleMuonDigi",
         "MyPfoAnalysis"])
     hcalEnergyStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     hcalEnergyStep.setMarlinPandoraProcessor(pandoraProcessor)
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         "MyHcalBarrelDigi", "MyHcalBarrelReco",
         "MyHcalEndcapDigi", "MyHcalEndcapReco",
         "MyHcalRingDigi", "MyHcalRingReco",
-        "MySimpleBCalDigi", "MySimpleLCalDigi", "MySimpleLHCalDigi", "MySimpleMuonDigi",
+        "MySimpleBCalDigi", "MySimpleLCalDigi", "MySimpleLHCalDigi", "MyDDSimpleMuonDigi",
         "MyPfoAnalysis"])
     pandoraMipScaleStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     pandoraMipScaleStep.setMarlinPandoraProcessor(pandoraProcessor)
