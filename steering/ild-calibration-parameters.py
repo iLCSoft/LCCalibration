@@ -26,7 +26,7 @@ calibrationParameters.append( ("MyHcalEndcapReco", "calibration_factorsMipGev", 
 calibrationParameters.append( ("MyHcalRingReco",   "calibration_factorsMipGev", "HcalRingEnergyFactors") )
 
 # muon calibration
-calibrationParameters.append( ("MySimpleMuonDigi", "CalibrMUON", "MuonCalibration") )
+calibrationParameters.append( ("MyDDSimpleMuonDigi", "CalibrMUON", "MuonCalibration") )
 
 # PandoraPFA constants
 calibrationParameters.append( ("MyDDMarlinPandora", "ECalToMipCalibration", "PandoraEcalToMip") )
