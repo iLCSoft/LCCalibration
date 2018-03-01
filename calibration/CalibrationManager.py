@@ -97,6 +97,8 @@ class CalibrationManager(object) :
                                 help="The input kaon0L energy (unit GeV)", required = False)
         parser.add_argument("--muonEnergy", action="store", default=10,
                                 help="The input muon energy (unit GeV)", required = False)
+        parser.add_argument("--pandoraSettings", action="store", default="PandoraSettingsDefault.xml",
+                                help="The pandora settings XML file", required = ("pandoraSettings" in requiredArgs))
                                 
     def getGeometry(self) :
         return self._geometry

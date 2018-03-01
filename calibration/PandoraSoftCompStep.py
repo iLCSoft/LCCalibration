@@ -31,6 +31,7 @@ class PandoraSoftCompStep(CalibrationStep) :
         # command line requirement
         self._requireSteeringFile()
         self._requireCompactFile()
+        self._requirePandoraSettings()
         self._requireCustomCmdLineArg("energies")
         self._requireCustomCmdLineArg("lcioFilePattern")
         self._requireCustomCmdLineArg("rootFilePattern")
@@ -57,8 +58,8 @@ class PandoraSoftCompStep(CalibrationStep) :
             steeringFile = parsed.steeringFile
             marlinXml = MarlinXML()
             marlinXml.setSteeringFile(steeringFile, load=True)
-            pandoraSettings = marlinXml.getProcessorParameter(self._marlinPandoraProcessor, "PandoraSettingsXmlFile")
-            pandora = PandoraXML(pandoraSettings)
+
+            pandora = PandoraXML(parsed.pandoraSettings)
             pandora.setRemoveEnergyCorrections(True)
 
             for energy in parsed.energies:

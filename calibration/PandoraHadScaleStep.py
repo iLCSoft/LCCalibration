@@ -42,6 +42,7 @@ class PandoraHadScaleStep(CalibrationStep) :
         self._requireKaon0LFile()
         self._requireHCalAccuracy()
         self._requireECalAccuracy()
+        self._requirePandoraSettings()
 
     def description(self):
         return "Calibrate the hadronic scale of the ecal and the hcal. Outputs the constants ECalToHadGeVCalibrationBarrel, ECalToHadGeVCalibrationEndCap and HCalToHadGeVCalibration"
@@ -65,8 +66,7 @@ class PandoraHadScaleStep(CalibrationStep) :
         self._kaon0LEnergy = parsed.kaon0LEnergy
         
         # setup pandora settings
-        pandoraSettings = self._marlin.getProcessorParameter(self._marlinPandoraProcessor, "PandoraSettingsXmlFile")
-        pandora = PandoraXML(pandoraSettings)
+        pandora = PandoraXML(parsed.pandoraSettings)
         pandora.setRemoveEnergyCorrections(True)
         newPandoraSettings = pandora.generateNewXmlFile()
         self._marlin.setProcessorParameter(self._marlinPandoraProcessor, "PandoraSettingsXmlFile", newPandoraSettings)
