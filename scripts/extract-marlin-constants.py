@@ -54,7 +54,7 @@ constantFile = open(parsed.constantFile, 'r')
 constants = etree.Element("constants")
 
 for line in constantFile:
-    if len(line.strip()) > 0 and not line.strip().startswith("<?") and not line.strip().startswith("<!--"):
+    if len(line.strip()) > 0 and not line.strip().startswith("<?") and not line.strip().startswith("<!--") and (line.find("</constant>") > 0 or line.strip().endswith("/>")):
         constant = etree.XML(line.strip())
         constants.append(constant)
 
