@@ -175,5 +175,8 @@ class CalibrationStep(object) :
         
     def _requireMuonFile(self):
         self._requiredArgs.add("lcioMuonFile")
+
+    def _requirePandoraSettings(self):
+        self._requiredArgs.add("pandoraSettings")
     
 #

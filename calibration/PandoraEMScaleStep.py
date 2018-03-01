@@ -37,6 +37,7 @@ class PandoraEMScaleStep(CalibrationStep) :
         self._requireIterations()
         self._requirePhotonFile()
         self._requireECalAccuracy()
+        self._requirePandoraSettings()
 
     def description(self):
         return "Calibrate the electromagnetic scale of the ecal and the hcal. Outputs the constants ECalToEMGeVCalibration and HCalToEMGeVCalibration"
@@ -59,8 +60,7 @@ class PandoraEMScaleStep(CalibrationStep) :
         self._photonEnergy = parsed.photonEnergy
         
         # setup pandora settings
-        pandoraSettings = self._marlin.getProcessorParameter(self._marlinPandoraProcessor, "PandoraSettingsXmlFile")
-        pandora = PandoraXML(pandoraSettings)
+        pandora = PandoraXML(parsed.pandoraSettings)
         pandora.setRemoveEnergyCorrections(True)
         newPandoraSettings = pandora.generateNewXmlFile()
         self._marlin.setProcessorParameter(self._marlinPandoraProcessor, "PandoraSettingsXmlFile", newPandoraSettings)
