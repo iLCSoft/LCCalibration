@@ -1,0 +1,55 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]
+then
+  echo "usage: $0 settings.cfg"
+  exit 1
+fi
+
+userSettings=$1
+source ${userSettings}
+
+if [ $? -ne 0 ]
+then
+  echo "Failed to source configuration file '${userSettings}'"
+  exit 1
+fi
+
+scriptDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Send jobs with qsub
+# Basic samples for general purpose calibration
+for run in $(seq 1 10)
+do
+  # run ddsim muons
+  qsub -N ddsim-calib-${run} \
+    ${scriptDirectory}/../scripts/run-ddsim-single-particle \
+    ${userSettings} mu- ${muonCalibrationEnergy} ${run}
+  # run ddsim photons
+  qsub -N ddsim-calib-${run} \
+    ${scriptDirectory}/../scripts/run-ddsim-single-particle \
+    ${userSettings} gamma ${photonCalibrationEnergy} ${run}
+  # run ddsim kaon0L
+  qsub -N ddsim-calib-${run} \
+    ${scriptDirectory}/../scripts/run-ddsim-single-particle \
+    ${userSettings} kaon0L ${kaon0LCalibrationEnergy} ${run}
+done
+
+
+# Specialized samples for Pandora software compensation training
+for run in $(seq 1 10)
+do
+  for energy in ${softwareCompensationKaon0LEnergies}
+  do
+    if [[ $energy -eq ${kaon0LCalibrationEnergy} ]]
+    then
+      continue
+    fi
+    
+    # run ddsim kaon0L
+    qsub -N ddsim-calib-${run} \
+      ${scriptDirectory}/../scripts/run-ddsim-single-particle \
+      ${userSettings} kaon0L ${energy} ${run}
+  done
+done
+

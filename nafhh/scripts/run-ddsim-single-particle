@@ -1,0 +1,96 @@
+#!/bin/bash
+
+echo "############################################################################"
+echo "                             System information"
+echo "                             =================="
+
+echo "Host:"
+hostname -f
+
+echo "CPU(s):"
+cat /proc/cpuinfo | grep "model name" | cut -b 14-
+
+echo "RAM:"
+cat /proc/meminfo | grep "MemTotal" | cut -b 10-
+
+echo "Swap:"
+cat /proc/meminfo | grep "SwapTotal" | cut -b 11-
+
+
+echo "############################################################################"
+echo "Group:      ${GROUP}"
+
+echo "Hosttype:   ${HOSTTYPE}"
+
+echo "User:       ${LOGNAME}"
+
+echo "Shell:      ${SHELL}"
+
+echo "TMP:        ${TMP}"
+
+echo "TMPDIR:     ${TMPDIR}"
+
+echo "User:       ${USER}"
+
+echo "Working_DIR:${PWD}"
+
+echo "############################################################################"
+echo
+echo "############################################################################"
+echo
+
+settings=$1
+particle=$2
+energy=$3
+run=$4
+
+# import user settings
+source ${settings}
+printSettings
+
+# source ilcsoft
+source ${ilcsoftInitScript}
+
+outputDirectory=${lcCalibrationPool}/ddsim
+outputFile=${outputDirectory}/ddsim-s${ilcsoftVersion}-G${detectorModelSim}-P${particle}-E${energy}-calibration_${run}.slcio
+compactFile=$lcgeo_DIR/${lcgeoCompactFileSim}
+steeringFile=`mktemp -p . ddsim_steer_XXXXXX.py`
+
+echo "Steering file    : ${steeringFile}"
+
+# Get steering file fron github
+downloadDDSimSteeringFile ${steeringFile} ${ddsimSteeringFileVersion}
+
+if [ $? != 0 ]
+then
+  echo "Couldn't get the ddsim steering file from github !"
+  exit 1
+fi
+
+mkdir -p ${outputDirectory}
+
+echo "############################################################################"
+echo "                                Running ddsim"
+echo "                             =================="
+
+# Run ddsim
+ddsim --compactFile ${compactFile} \
+  --outputFile ${outputFile} \
+  --steeringFile ${steeringFile} \
+  --numberOfEvents ${numberOfEventsSim} \
+  --physicsList ${physicsList} \
+  --enableGun \
+  --gun.particle ${particle} \
+  --gun.energy ${energy}000 \
+  --gun.distribution uniform \
+  --gun.phiMin 0 \
+  --gun.phiMax 3.1415 \
+  --gun.thetaMin 0 \
+  --gun.thetaMax 3.1415
+ddsimStatus=$?
+
+echo "############################################################################"
+echo "                   Job finished with status ${ddsimStatus}"
+echo "                             =================="
+
+ls -lthr ${outputDirectory}
