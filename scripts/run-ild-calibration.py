@@ -25,8 +25,7 @@ if __name__ == "__main__":
     gearConversionPlugin = "default"
     pandoraProcessor = "MyDDMarlinPandora"
     pfoAnalysisProcessor = "MyPfoAnalysis"
-    recOutputProcessor = "MyLCIOOutputProcessor"
-    dstOutputProcessor = "DSTOutput"
+    turnoffProcessors = ["MyLCIOOutputProcessor", "DSTOutput"]
     runEcalRingCalibration = True
     runHcalRingCalibration = True
     stepNames = []
@@ -133,7 +132,7 @@ if __name__ == "__main__":
     stepNames.append(pandoraEMScaleStep.name())
     pandoraEMScaleStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     pandoraEMScaleStep.setMarlinPandoraProcessor(pandoraProcessor)
-    pandoraEMScaleStep.setOutputProcessorNames(recOutputProcessor, dstOutputProcessor)
+    pandoraEMScaleStep.setTurnoffProcessors(turnoffProcessors)
     manager.addStep( pandoraEMScaleStep )
 
     # Pandora hadronic scale calibration
@@ -142,7 +141,7 @@ if __name__ == "__main__":
     stepNames.append(pandoraHadScaleStep.name())
     pandoraHadScaleStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     pandoraHadScaleStep.setMarlinPandoraProcessor(pandoraProcessor)
-    pandoraHadScaleStep.setOutputProcessorNames(recOutputProcessor, dstOutputProcessor)
+    pandoraHadScaleStep.setTurnoffProcessors(turnoffProcessors)
     manager.addStep( pandoraHadScaleStep )
 
     pandoraSoftCompStep = PandoraSoftCompStep()
@@ -150,6 +149,7 @@ if __name__ == "__main__":
     stepNames.append(pandoraHadScaleStep.name())
     pandoraSoftCompStep.setPfoAnalysisProcessor(pfoAnalysisProcessor)
     pandoraSoftCompStep.setMarlinPandoraProcessor(pandoraProcessor)
+    pandoraSoftCompStep.setTurnoffProcessors(turnoffProcessors)
     manager.addStep( pandoraSoftCompStep )
 
     manager.run()
