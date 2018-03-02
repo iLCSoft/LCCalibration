@@ -22,17 +22,24 @@ scriptDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 for run in $(seq 1 10)
 do
   # run ddsim muons
-  qsub -N ddsim-calib-${run} \
+  qsub -N ddsim-calib-mu-E${muonCalibrationEnergy}-${run} \
+    -cwd \
+    -l arch=amd64,os=sld6,h_rt=23:59:00,h_vmem=4G \
     ${scriptDirectory}/../scripts/run-ddsim-single-particle \
     ${userSettings} mu- ${muonCalibrationEnergy} ${run}
   # run ddsim photons
-  qsub -N ddsim-calib-${run} \
+  qsub -N ddsim-calib-photon-E${photonCalibrationEnergy}-${run} \
+    -cwd \
+    -l arch=amd64,os=sld6,h_rt=23:59:00,h_vmem=4G \
     ${scriptDirectory}/../scripts/run-ddsim-single-particle \
     ${userSettings} gamma ${photonCalibrationEnergy} ${run}
   # run ddsim kaon0L
-  qsub -N ddsim-calib-${run} \
+  qsub -N ddsim-calib-kaon0L-E${kaon0LCalibrationEnergy}-${run} \
+    -cwd \
+    -l arch=amd64,os=sld6,h_rt=23:59:00,h_vmem=4G \
     ${scriptDirectory}/../scripts/run-ddsim-single-particle \
     ${userSettings} kaon0L ${kaon0LCalibrationEnergy} ${run}
+
 done
 
 
@@ -41,15 +48,19 @@ for run in $(seq 1 10)
 do
   for energy in ${softwareCompensationKaon0LEnergies}
   do
-    if [[ $energy -eq ${kaon0LCalibrationEnergy} ]]
+    # Do not re-run simulation if the standard kaon0L sample is already produced
+    if [[ $energy == ${kaon0LCalibrationEnergy} ]]
     then
       continue
     fi
     
     # run ddsim kaon0L
-    qsub -N ddsim-calib-${run} \
+    qsub -N ddsim-calib-kaon0L-E${energy}-${run} \
+      -cwd \
+      -l arch=amd64,os=sld6,h_rt=23:59:00,h_vmem=4G \
       ${scriptDirectory}/../scripts/run-ddsim-single-particle \
       ${userSettings} kaon0L ${energy} ${run}
+
   done
 done
 
