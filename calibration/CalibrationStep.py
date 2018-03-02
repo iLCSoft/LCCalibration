@@ -59,7 +59,7 @@ class CalibrationStep(object) :
     """ Set the processor list to turn off
     """
     def setTurnoffProcessors(self, processors):
-        self._turnOffProcessors = list(processors)
+        self._turnoffProcessors = list(processors)
     
     def setMarlinPandoraProcessor(self, processor):
         self._marlinPandoraProcessor = str(processor)
