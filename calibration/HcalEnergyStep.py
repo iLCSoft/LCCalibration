@@ -98,6 +98,9 @@ class HcalEnergyStep(CalibrationStep) :
         if len(self._runProcessors):
             self._marlin.turnOffProcessorsExcept(self._runProcessors)
 
+        if len(self._turnoffProcessors):
+            self._marlin.turnOffProcessors(self._turnoffProcessors)
+
 
     def run(self, config) :
 

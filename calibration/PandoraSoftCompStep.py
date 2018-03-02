@@ -87,6 +87,9 @@ class PandoraSoftCompStep(CalibrationStep) :
                 marlin.setMaxRecordNumber(parsed.maxRecordNumber)
                 marlin.setProcessorParameter(self._marlinPandoraProcessor, "PandoraSettingsXmlFile", str(newPandoraXmlFileName))
 
+                if len(self._turnoffProcessors):
+                    marlin.turnOffProcessors(self._turnoffProcessors)
+
                 try:
                     marlin.setProcessorParameter(self._pfoAnalysisProcessor, "RootFile", str(pfoAnalysisFile))
                 except:

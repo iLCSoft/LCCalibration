@@ -22,8 +22,6 @@ class PandoraHadScaleStep(CalibrationStep) :
         self._ecalEnergyScaleAccuracy = 0.01
         self._hcalEnergyScaleAccuracy = 0.01
         self._kaon0LEnergy = 0
-        self._recProcessorName = ""
-        self._dstProcessorName = ""
 
         # step input
         self._inputEcalToHadGeVBarrel = None
@@ -47,10 +45,6 @@ class PandoraHadScaleStep(CalibrationStep) :
     def description(self):
         return "Calibrate the hadronic scale of the ecal and the hcal. Outputs the constants ECalToHadGeVCalibrationBarrel, ECalToHadGeVCalibrationEndCap and HCalToHadGeVCalibration"
 
-    def setOutputProcessorNames(self, recProcessor, dstProcessor):
-        self._recProcessorName = recProcessor
-        self._dstProcessorName = dstProcessor
-        
     def readCmdLine(self, parsed) :
         # setup marlin
         self._marlin = Marlin(parsed.steeringFile)
@@ -79,13 +73,10 @@ class PandoraHadScaleStep(CalibrationStep) :
         
         if len(self._runProcessors):
             self._marlin.turnOffProcessorsExcept(self._runProcessors)
-            
-        if len(self._recProcessorName):
-            self._marlin.turnOffProcessors([self._recProcessorName])
-            
-        if len(self._dstProcessorName):
-            self._marlin.turnOffProcessors([self._dstProcessorName])
 
+        if len(self._turnoffProcessors):
+            self._marlin.turnOffProcessors(self._turnoffProcessors)
+            
     def run(self, config) :
         # loop variables
         currentEcalPrecision = 0.

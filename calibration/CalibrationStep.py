@@ -15,6 +15,7 @@ class CalibrationStep(object) :
         self._pfoAnalysisProcessor =  "MyPfoAnalysis"
         self._marlinPandoraProcessor = "MyDDMarlinPandora"
         self._runProcessors = list()
+        self._turnoffProcessors = list()
 
     def setManager(self, mgr) :
         self._manager = mgr
@@ -54,6 +55,11 @@ class CalibrationStep(object) :
     """
     def setRunProcessors(self, processors):
         self._runProcessors = list(processors)
+
+    """ Set the processor list to turn off
+    """
+    def setTurnoffProcessors(self, processors):
+        self._turnOffProcessors = list(processors)
     
     def setMarlinPandoraProcessor(self, processor):
         self._marlinPandoraProcessor = str(processor)
