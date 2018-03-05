@@ -1,95 +1,41 @@
 
-## Running calibration on NAFHH
+## Running calibration on grid
 
-The bunch of scripts is designed to run calibration **from scratch** using the nafhh.
+The bunch of scripts is designed to run calibration **from scratch** using the grid.
+The default scripts run with qsub but can be easily reshuffled to use another job submission interface.
 
-The needed parameters are the following :
+2 different scripts are provided to run the full calibration
+- One for the single particle simulation submission
+- One for the full calibration
 
-- The ilcsoft version (e.g v01-19-04) : Must be one the version installed on afs (/afs/desy.de/project/ilcsoft/sw/x86_64_gcc49_sl6/) 
-- The ILD detector model (e.g ILD_l4_v02) : Must be one the model provided in the lcgeo version of your ilcsoft install ($lcgeo_DIR/ILD/compact/*detector*/*detector*.xml)
-- The ILDConfig version (e.g v01-19-04) : Must be one of the version installed on afs (/afs/desy.de/project/ilcsoft/sw/ILDConfig). The version could be "*trunk*"
+A default steering file for job submission is provided in *steering/default-settings.cfg*. You can copy it and redefined all variables as you need for your job submission. All variables defined in this configuration file are documentation inside the file.
 
-4 different scripts send jobs to calibrate your detector from scratch. The bunch has to be run in a fixed order and script must wait for previous jobs to finish before to be run. Before to run each of this job, don't forget to source the init.sh script in the top level directory of this software :
+**!! Warning !!** 
 
-```shell
-cd /path/to/LCCalibration
-source init.sh
-```
-
-Not that each has to be run from the top level directory.
+When you submit a bunch a jobs with these files, make sure you start your job in a directory where you have enough space for storage.
 
 ### Run ddsim simulation
 
 ```shell
-./nafhh/ddsim/submit-single-particle-jobs ilcsoftVersion detectorModel
-# example :
-# ./nafhh/ddsim/submit-single-particle-jobs v01-19-04 ILD_l4_v02
+grid/jobs/qsub-ddsim-single-particle-jobs your-settings-file.cfg
 ```
-and wait for jobs to be finished before going to the next step.
 
-For example with ilcsoft *v01-19-04* and ILD model *ILD_l4_v02*, this will produce the following files in the directory /nfs/dust/ilc/group/ild/calibration/ddsim/ :
-
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pgamma-E10-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E10-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E20-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E30-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E40-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E50-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E60-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E70-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E80-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pkaon0L-E90-ILDCalibration.slcio
-- ddsim-sv01-19-04-pre-GILD_l4_v02-Pmu--E10-ILDCalibration.slcio
+and wait for jobs to be finished before going to the next step. This will produce all the simulation samples needed for your calibration.
 
 ### Run the main calibration
 
 ```shell
-./nafhh/calibration/submit-calibration-jobs ilcsoftVersion ilconfigVersion detectorModel
-# example :
-# ./nafhh/ddsim/submit-calibration-jobs v01-19-04 v01-19-04 ILD_l4_v02
-```
-and wait for jobs to be finished before going to the next step.
-
-For example with ilcsoft *v01-19-04* and ILD model *ILD_l4_v02*, this will produce two files in the directory */nfs/dust/ilc/group/ild/calibration/calibration/* :
-
-- calibration-sv01-19-04-GILD_l4_v02-ILDCalibration.xml
-- bbudsc_3evt_stdreco_dd4hep-sv01-19-04-GILD_l4_v02-calibrated.xml
-
-These files will be used in the last steps as input. Check plots are generated from the calibration job and are available in the directory */nfs/dust/ilc/group/ild/calibration/calibration/checkPlots-sv01-19-04-GILD_l4_v02*. Note that if a calibration was present before sending the jobs, a new file will be created and the old one will be renamed with the .bck extension appended at the end of the file name. 
-
-### Producing root files for the software compensation calibration
-
-As the software compensation technique requires multiple energy points, a special bunch of jobs is dedicated for producing the root files used as input for the minimizer code. To send the jobs, use :
-
-```shell
-./nafhh/calibration/submit-soft-comp-root-producer-jobs ilcsoftVersion ilconfigVersion detectorModel
-# example :
-# ./nafhh/ddsim/submit-soft-comp-root-producer-jobs v01-19-04 v01-19-04 ILD_l4_v02
-```
-and wait for jobs to be finished before going to the next step.
-
-This produces the following files in the */nfs/dust/ilc/group/ild/calibration/calibration/* directory :
-
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E10-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E20-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E30-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E40-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E50-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E60-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E70-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E80-ILDCalibration.root
-- SoftwareCompensation-sv01-19-04-GILD_l4_v02-Pkaon0L-E90-ILDCalibration.root
-
-### Calibrate software compensation weights
-
-```shell
-./nafhh/calibration/submit-soft-comp-calibration-jobs ilcsoftVersion detectorModel
-# example :
-# ./nafhh/ddsim/submit-soft-comp-calibration-jobs v01-19-04 ILD_l4_v02
+./nafhh/calibration/qsub-full-calibration-jobs your-settings-file.cfg
 ```
 
-The final output after running all of these jobs is the new Marlin steering file :
+and wait for jobs to be finished before going to the next step. This will run the full calibration and save some output in your pool directory (see config file). Here after, an example of files you can find after processing the full calibration :
 
-- /nfs/dust/ilc/group/ild/calibration/calibration/bbudsc_3evt_stdreco_dd4hep-sv01-19-04-GILD_l4_v02-calibrated.xml
+- calibration-sv01-19-05-GILD_l5_o1_v02-ILDCalibration.xml: The final xml output containing the new calibration constants for your detector
+- Calibration-sv01-19-05-GILD_l5_o1_v02-ILDCalibration_constants.xml: The final Marlin xml file containing the final calibration constants. This file can be included using the include mechanism of MarlinXML.
+- A bunch of root files, used for the software compensation training
+  - MarlinSoftwareCompensation-sv01-19-05-GILD_l5_o1_v02-Pkaon0L-E10-calibration-combined.root
+  - MarlinSoftwareCompensation-sv01-19-05-GILD_l5_o1_v02-Pkaon0L-E20-calibration-combined.root
+  - MarlinSoftwareCompensation-sv01-19-05-GILD_l5_o1_v02-Pkaon0L-E30-calibration-combined.root
+  - ...
+- the directory *checkPlots-sv01-19-05-GILD_l5_o1_v02/* contains check plots output from different calibration steps, in root macros (.C) and image formats (.png).
 
-with all detectors calibrated and software compensation weights included. 
