@@ -1,0 +1,147 @@
+#!/bin/bash
+
+echo "############################################################################"
+echo "                             System information"
+echo "                             =================="
+
+echo "Host:"
+hostname -f
+
+echo "CPU(s):"
+cat /proc/cpuinfo | grep "model name" | cut -b 14-
+
+echo "RAM:"
+cat /proc/meminfo | grep "MemTotal" | cut -b 10-
+
+echo "Swap:"
+cat /proc/meminfo | grep "SwapTotal" | cut -b 11-
+
+
+echo "############################################################################"
+echo "Group:      ${GROUP}"
+
+echo "Hosttype:   ${HOSTTYPE}"
+
+echo "User:       ${LOGNAME}"
+
+echo "Shell:      ${SHELL}"
+
+echo "TMP:        ${TMP}"
+
+echo "TMPDIR:     ${TMPDIR}"
+
+echo "User:       ${USER}"
+
+echo "Working_DIR:${PWD}"
+
+echo "############################################################################"
+echo
+echo "############################################################################"
+echo
+
+settings=$1
+
+# import user settings
+source ${settings}
+printSettings
+
+# source ilcsoft
+unset MARLIN_DLL # just in case ...
+source ${ilcsoftInitScript}
+echo $MARLIN_DLL
+
+inputDirectory=${lcCalibrationPool}/calibration
+outputDirectory=${lcCalibrationPool}/calibration
+checkPlotsOutputDirectory=${outputDirectory}/checkPlots-s${ilcsoftVersion}-G${detectorModelRec}
+calibrationFile=calibration-s${ilcsoftVersion}-G${detectorModelRec}-ILDCalibration.xml
+rootFilePattern="MarlinSoftwareCompensation-s${ilcsoftVersion}-G${detectorModelRec}-Pkaon0L-E%{energy}-calibration-combined.root"
+calibratedConstantsFile=${outputDirectory}/Calibration-s${ilcsoftVersion}-G${detectorModelRec}-ILDCalibration_constants.xml
+
+
+cloneLCCalibrationGitRepo ${lcCalibrationGitRepo} ${lcCalibrationVersion}
+cloneOK=$?
+ls
+
+if [ ${cloneOK} != 0 ]
+then
+  echo "Couldn't clone LCCalibration !"
+  exit 1
+fi
+
+echo "LCCalibration: ${LCCalibration}"
+source ${LCCalibration}/init.sh
+
+mkdir -p ${outputDirectory}
+mkdir -p ${checkPlotsOutputDirectory}
+
+cd ${LCCALIBRATION_DIR}
+
+# Get calibration file from previous steps
+cp ${outputDirectory}/${calibrationFile} .
+
+if [ $? -ne 0 ]; then
+    echo "Failed to get the calibration file !"
+    exit 1
+fi
+
+
+echo "############################################################################"
+echo "                   Running software compensation minimization"
+echo "                             ==================="
+
+for energy in ${softwareCompensationKaon0LEnergies}
+do
+  rootFiles=`ls -1 ${inputDirectory}/MarlinSoftwareCompensation-s${ilcsoftVersion}-G${detectorModelRec}-Pkaon0L-E${energy}-calibration_*.root | tr '\n' ' '`
+  hadd MarlinSoftwareCompensation-s${ilcsoftVersion}-G${detectorModelRec}-Pkaon0L-E${energy}-calibration-combined.root ${rootFiles}
+  
+  if [ $? -ne 0 ]; then
+      echo "Failed to combined root files for energy ${energy} !"
+      exit 1
+  fi
+done
+
+echo "############################################################################"
+echo "                   Running software compensation minimization"
+echo "                             ==================="
+
+# Run calibration
+python ${LCCALIBRATION_DIR}/scripts/run-ild-calibration.py \
+  --inputCalibrationFile ${calibrationFile} \
+  --compactFile $lcgeo_DIR/${lcgeoCompactFileRec} \
+  --steeringFile MarlinStdRecoCalibration.xml \
+  --pandoraSettings ${pandoraSettingsFile} \
+  --energies ${softwareCompensationKaon0LEnergies} \
+  --rootFilePattern ${rootFilePattern} \
+  --runMinimizer \
+  --startStep 6 \
+  --endStep 6 # Only software compensation training
+
+calibrationStatus=$?
+
+echo "############################################################################"
+echo "                   Job finished with status ${calibrationStatus}"
+echo "                             =================="
+  
+if [ $calibrationStatus -ne 0 ]; then
+    echo "Failed to software compensation reconstruction !"
+    exit 1
+fi
+
+# Replace SC weights in Marlin steering file
+python ${LCCALIBRATION_DIR}/scripts/generate-marlin-constants.py \
+  --parameterFile ${LCCALIBRATION_DIR}/steering/ild-calibration-parameters.py \
+  --inputFile ${calibrationFile} \
+  --constantsFile ${calibratedConstantsFile}
+
+if [ $? -ne 0 ]; then
+    echo "Failed to create a Marlin constant XML file !"
+    exit 1
+fi
+
+ls -lthr ${outputDirectory}
+
+########################################
+# Save output files for further analysis
+mv ${calibrationFile} ${outputDirectory}/${calibrationFile}
+mv SoftwareCompensationMonitoring.root ${checkPlotsOutputDirectory}/SoftwareCompensationMonitoring-s${ilcsoftversion}-G${detectorModelRec}.root
+mv MarlinSoftwareCompensation-s${ilcsoftVersion}-G${detectorModelRec}-Pkaon0L-E*-calibration-combined.root ${checkPlotsOutputDirectory}

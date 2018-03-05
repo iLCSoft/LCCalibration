@@ -1,0 +1,143 @@
+#!/bin/bash
+
+echo "############################################################################"
+echo "                             System information"
+echo "                             =================="
+
+echo "Host:"
+hostname -f
+
+echo "CPU(s):"
+cat /proc/cpuinfo | grep "model name" | cut -b 14-
+
+echo "RAM:"
+cat /proc/meminfo | grep "MemTotal" | cut -b 10-
+
+echo "Swap:"
+cat /proc/meminfo | grep "SwapTotal" | cut -b 11-
+
+
+echo "############################################################################"
+echo "Group:      ${GROUP}"
+
+echo "Hosttype:   ${HOSTTYPE}"
+
+echo "User:       ${LOGNAME}"
+
+echo "Shell:      ${SHELL}"
+
+echo "TMP:        ${TMP}"
+
+echo "TMPDIR:     ${TMPDIR}"
+
+echo "User:       ${USER}"
+
+echo "Working_DIR:${PWD}"
+
+echo "############################################################################"
+echo
+echo "############################################################################"
+echo
+
+settings=$1
+energy=$2
+run=$3
+
+# import user settings
+source ${settings}
+printSettings
+
+# source ilcsoft
+unset MARLIN_DLL # just in case ...
+source ${ilcsoftInitScript}
+echo $MARLIN_DLL
+
+inputDirectory=${lcCalibrationPool}/ddsim
+outputDirectory=${lcCalibrationPool}/calibration
+calibrationFile=calibration-s${ilcsoftVersion}-G${detectorModelRec}-ILDCalibration.xml
+lcioFilePattern="${inputDirectory}/ddsim-s${ilcsoftVersion}-G${detectorModelSim}-Pkaon0L-E%{energy}-calibration_${run}.slcio"
+rootFilePattern="${outputDirectory}/MarlinSoftwareCompensation-s${ilcsoftVersion}-G${detectorModelRec}-Pkaon0L-E%{energy}-calibration_${run}.root"
+
+cloneILDConfigGitRepo ${ildConfigGitRepo} ${ildConfigVersion}
+cloneOK=$?
+ls
+
+if [ ${cloneOK} != 0 ]
+then
+  echo "Couldn't clone ILDConfig !"
+  exit 1
+fi
+
+echo "ILDConfig: ${ILDConfig}"
+
+
+cloneLCCalibrationGitRepo ${lcCalibrationGitRepo} ${lcCalibrationVersion}
+cloneOK=$?
+ls
+
+if [ ${cloneOK} != 0 ]
+then
+  echo "Couldn't clone LCCalibration !"
+  exit 1
+fi
+
+echo "LCCalibration: ${LCCalibration}"
+source ${LCCalibration}/init.sh
+
+mkdir -p ${outputDirectory}
+
+# consider ILDConfig directory as running directory
+cd ${ILDConfig}/StandardConfig/production
+
+# Generate a fresh steering file !
+Marlin -n \
+  MarlinStdReco.xml \
+  --constant.lcgeo_DIR=$lcgeo_DIR \
+  --constant.DetectorModel=${detectorModelRec} \
+  --global.OutputSteeringFile=MarlinStdRecoCalibration.xml
+
+if [ $? -ne 0 ]; then
+    echo "Failed to generate a Marlin steering file !"
+    exit 1
+fi
+
+# Get calibration file from previous step
+cp ${outputDirectory}/${calibrationFile} .
+
+if [ $? -ne 0 ]; then
+    echo "Failed to get the calibration file !"
+    exit 1
+fi
+
+echo "############################################################################"
+echo "                   Running software compensation reconstruction"
+echo "                             ==================="
+
+# Run calibration
+python ${LCCALIBRATION_DIR}/scripts/run-ild-calibration.py \
+  --inputCalibrationFile ${calibrationFile} \
+  --compactFile $lcgeo_DIR/${lcgeoCompactFileRec} \
+  --steeringFile MarlinStdRecoCalibration.xml \
+  --pandoraSettings ${pandoraSettingsFile} \
+  --ecalCalibrationAccuracy ${ecalCalibrationAccuracy} \
+  --hcalCalibrationAccuracy ${hcalCalibrationAccuracy} \
+  --energies ${energy} \
+  --lcioFilePattern ${lcioFilePattern} \
+  --rootFilePattern ${rootFilePattern} \
+  --runMarlin \
+  --maxParallel 1 \
+  --startStep 6 \
+  --endStep 6 # Only software compensation training
+
+calibrationStatus=$?
+
+echo "############################################################################"
+echo "                   Job finished with status ${calibrationStatus}"
+echo "                             =================="
+  
+if [ $calibrationStatus -ne 0 ]; then
+    echo "Failed to software compensation reconstruction !"
+    exit 1
+fi
+
+ls -lthr ${outputDirectory}
