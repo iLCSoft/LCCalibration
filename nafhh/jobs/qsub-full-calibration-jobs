@@ -1,0 +1,49 @@
+#!/bin/bash
+
+jobIDFromPrint () {
+  qsubPrint="$1"
+  jid=`echo "$qsubPrint" | awk 'match($0,/[0-9]+/){print substr($0, RSTART, RLENGTH)}'`
+  echo "${jid}"
+}
+
+if [ $# -ne 1 ]
+then
+  echo "usage: $0 settings.cfg"
+  exit 1
+fi
+
+userSettings=$1
+source ${userSettings}
+
+if [ $? -ne 0 ]
+then
+  echo "Failed to source configuration file '${userSettings}'"
+  exit 1
+fi
+
+scriptDirectory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# First calibration job: general purpose calibration 
+qsubjobPrint=`qsub -N calib-part1 -cwd -l arch=amd64,os=sld6,h_rt=23:59:00,h_vmem=4G ${scriptDirectory}/../scripts/run-calibration ${userSettings}`
+jobID1=`jobIDFromPrint "${qsubjobPrint}"`
+jobIDs2=""
+
+# Second calibration job(s): Training the pandora software compensation
+for energy in ${softwareCompensationKaon0LEnergies}
+do
+  for run in $(seq 1 10)
+  do
+    qsubjobPrint=`qsub -hold_jid ${jobID1} -N calib-part2 -cwd -l arch=amd64,os=sld6,h_rt=23:59:00,h_vmem=4G ${scriptDirectory}/../scripts/run-software-compensation-reco ${userSettings} ${energy} ${run}`
+    jobID2=`jobIDFromPrint "${qsubjobPrint}"`
+    
+    if [ "${jobIDs2}" = "" ]
+    then
+      jobIDs2="${jobID2}"
+    else
+      jobIDs2="${jobIDs2},${jobID2}"
+    fi
+  done
+done
+
+# Thrid calibration job
+qsub -hold_jid ${jobIDs2} -N calib-part3 -cwd -l arch=amd64,os=sld6,h_rt=23:59:00,h_vmem=4G ${scriptDirectory}/../scripts/run-software-compensation-minimization ${userSettings}
