@@ -20,7 +20,6 @@ from calibration.PandoraHadScaleStep import *
 
 
 if __name__ == "__main__":
-    gearConversionPlugin = "GearForSiD"
     pandoraProcessor = "MyDDMarlinPandora"
     pfoAnalysisProcessor = "MyPfoAnalysis"
     runEcalRingCalibration = False
@@ -29,8 +28,6 @@ if __name__ == "__main__":
         
     # Create the calibration manager and configure it
     manager = CalibrationManager()
-    
-    manager.getGearConverter().setPluginName(gearConversionPlugin)
 
     # mip scale for all detectors
     mipScaleStep = SplitDigiMipScaleStep()
