@@ -4,6 +4,111 @@ from math import *
 import os
 from calibration.XmlTools import *
 import subprocess
+import ROOT
+from ROOT import gROOT
+gROOT.SetBatch(1)
+import DD4hep
+import DDRec
+import calibration.SystemOfUnits as ddunits
+
+class DDGeometryInterface(object):
+    def __init__(self, compactFile):
+        self._compactFile = compactFile
+        DD4hep.setPrintLevel(DD4hep.OutputLevel.ERROR)
+        self._description = DD4hep.Detector.getInstance()
+        self._description.fromXML(self._compactFile)
+        
+    def _getDetector(self, dname):
+        return self._description.detector(dname)
+    
+    def getCaloExtent(self, dname, ext):
+        detector = self._getDetector(dname)
+        data = DDRec.LayeredCalorimeterData(detector)
+        return data.extent[ext]/ddunits.mm
+
+    def getCaloInnerR(self, dname):
+        return self.getCaloExtent(dname, 0)
+
+    def getCaloOuterR(self, dname):
+        return self.getCaloExtent(dname, 1)
+    
+    def getCaloInnerZ(self, dname):
+        return self.getCaloExtent(dname, 2)
+    
+    def getCaloOuterZ(self, dname) :
+        return self.getCaloExtent(dname, 3)
+    
+    def getEcalBarrelCosThetaRange(self, dname="EcalBarrel") :
+        ecalBarrelOuterR = float(self.getCaloOuterR(dname))
+        ecalBarrelOuterZ = float(self.getCaloOuterZ(dname))
+        maxCosTheta = cos(atan( ecalBarrelOuterR / ecalBarrelOuterZ ))
+        return 0.05, maxCosTheta
+    
+    def getEcalEndcapCosThetaRange(self, dname="EcalEndcap") :
+        ecalEndcapOuterR = float(self.getCaloOuterR(dname))
+        ecalEndcapOuterZ = float(self.getCaloOuterZ(dname))
+        ecalEndcapInnerR = float(self.getCaloInnerR(dname))
+        ecalEndcapInnerZ = float(self.getCaloInnerZ(dname))
+        minCosTheta = cos(atan( ecalEndcapOuterR / ecalEndcapOuterZ ))
+        maxCosTheta = cos(atan( ecalEndcapInnerR / ecalEndcapInnerZ ))
+        return minCosTheta, maxCosTheta
+
+    def getHcalBarrelCosThetaRange(self, dname="HcalBarrel") :
+        hcalBarrelOuterR = float(self.getCaloOuterR(dname))
+        hcalBarrelOuterZ = float(self.getCaloOuterZ(dname))
+        maxCosTheta = cos(atan( hcalBarrelOuterR / hcalBarrelOuterZ ))
+        return 0.05, maxCosTheta
+
+    def getHcalEndcapCosThetaRange(self, dname="HcalEndcap") :
+        hcalEndcapOuterR = float(self.getCaloOuterR(dname))
+        hcalEndcapOuterZ = float(self.getCaloOuterZ(dname))
+        hcalEndcapInnerR = float(self.getCaloInnerR(dname))
+        hcalEndcapInnerZ = float(self.getCaloInnerZ(dname))
+        minCosTheta = cos(atan( hcalEndcapOuterR / hcalEndcapOuterZ ))
+        maxCosTheta = cos(atan( hcalEndcapInnerR / hcalEndcapInnerZ ))
+        return minCosTheta, maxCosTheta
+    
+    """ Calculates and returns the following factor :
+        f = (Abs_endcap / Abs_ring) * (Sens_ring / Sens_endcap)
+    """
+    def getCalorimeterGeometryFactor(self, endcapName, ringName):
+        endcapDetector = self._getDetector(endcapName)
+        plugDetector = self._getDetector(ringName)
+        endcapAbsorberSum = 0
+        endcapSensitiveSum = 0
+        plugAbsorberSum = 0
+        plugSensitiveSum = 0
+        endcapData = DDRec.LayeredCalorimeterData(endcapDetector)
+        plugData = DDRec.LayeredCalorimeterData(plugDetector)
+            
+        for layer in endcapData.layers:
+            totalThickness = (layer.inner_thickness+layer.inner_thickness)/ddunits.mm
+            senitiveThickness = layer.sensitive_thickness/ddunits.mm
+            absorberThickness = totalThickness - senitiveThickness
+            endcapAbsorberSum = endcapAbsorberSum + absorberThickness
+            endcapSensitiveSum = endcapSensitiveSum + senitiveThickness
+
+        for layer in plugData.layers:
+            totalThickness = (layer.inner_thickness+layer.inner_thickness)/ddunits.mm
+            senitiveThickness = layer.sensitive_thickness/ddunits.mm
+            absorberThickness = totalThickness - senitiveThickness
+            plugAbsorberSum = plugAbsorberSum + absorberThickness
+            plugSensitiveSum = plugSensitiveSum + senitiveThickness
+        
+        return (endcapAbsorberSum / plugAbsorberSum) * (plugSensitiveSum / endcapSensitiveSum) 
+        
+        
+    """ Calculates and returns the following factor in the ecal
+        f = (Abs_endcap / Abs_ring) * (Sens_ring / Sens_endcap)
+    """
+    def getEcalGeometryFactor(self, ecname="EcalEndcap", ername="EcalPlug"):
+        return self.getCalorimeterGeometryFactor(ecname, ername)
+    
+    """ Calculates and returns the following factor in the hcal
+        f = (Abs_endcap / Abs_ring) * (Sens_ring / Sens_endcap)
+    """
+    def getHcalGeometryFactor(self, hcname="HcalEndcap", hrname="HcalRing"):
+        return self.getCalorimeterGeometryFactor(hcname, hrname)
 
 class GeometryInterface(object) :
     def __init__(self, gearFile):
