@@ -26,16 +26,35 @@ gearConverter.setPluginName(parsed.gearConverterPlugin)
 gearFile = gearConverter.convertToGear()
 geo = GeometryInterface(gearFile)
 
+ddgeo = DDGeometryInterface(parsed.compactFile)
+
+
 ebmin, ebmax = geo.getEcalBarrelCosThetaRange()
-print "Ecal barrel cos theta range : [{0},{1}]".format(ebmin, ebmax)
-
 eemin, eemax = geo.getEcalEndcapCosThetaRange()
-print "Ecal endcap cos theta range : [{0},{1}]".format(eemin, eemax)
-
 hbmin, hbmax = geo.getHcalBarrelCosThetaRange()
-print "Hcal barrel cos theta range : [{0},{1}]".format(hbmin, hbmax)
-
 hemin, hemax = geo.getHcalEndcapCosThetaRange()
+efactor = geo.getEcalGeometryFactor()
+hfactor = geo.getHcalGeometryFactor()
+
+print "======= Using Gear ======"
+print "Ecal barrel cos theta range : [{0},{1}]".format(ebmin, ebmax)
+print "Ecal endcap cos theta range : [{0},{1}]".format(eemin, eemax)
+print "Hcal barrel cos theta range : [{0},{1}]".format(hbmin, hbmax)
 print "Hcal endcap cos theta range : [{0},{1}]".format(hemin, hemax)
+print "Ecal/Hcal geometry factors  : {0} / {1}".format(efactor, hfactor)
+
+ddebmin, ddebmax = ddgeo.getEcalBarrelCosThetaRange()
+ddeemin, ddeemax = ddgeo.getEcalEndcapCosThetaRange()
+ddhbmin, ddhbmax = ddgeo.getHcalBarrelCosThetaRange()
+ddhemin, ddhemax = ddgeo.getHcalEndcapCosThetaRange()
+ddefactor = ddgeo.getEcalGeometryFactor()
+ddhfactor = ddgeo.getHcalGeometryFactor()
+
+print "======= Using DD4hep ======"
+print "Ecal barrel cos theta range : [{0},{1}]".format(ddebmin, ddebmax)
+print "Ecal endcap cos theta range : [{0},{1}]".format(ddeemin, ddeemax)
+print "Hcal barrel cos theta range : [{0},{1}]".format(ddhbmin, ddhbmax)
+print "Hcal endcap cos theta range : [{0},{1}]".format(ddhemin, ddhemax)
+print "Ecal/Hcal geometry factors  : {0} / {1}".format(ddefactor, ddhfactor)
 
 #
