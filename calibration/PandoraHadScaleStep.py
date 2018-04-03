@@ -48,8 +48,6 @@ class PandoraHadScaleStep(CalibrationStep) :
     def readCmdLine(self, parsed) :
         # setup marlin
         self._marlin = Marlin(parsed.steeringFile)
-        gearFile = self._manager.getGearConverter().convertToGear(parsed.compactFile)
-        self._marlin.setGearFile(gearFile)
         self._marlin.setCompactFile(parsed.compactFile)
         self._marlin.setMaxRecordNumber(parsed.maxRecordNumber)
         self._marlin.setInputFiles(self._extractFileList(parsed.lcioKaon0LFile, "slcio"))
